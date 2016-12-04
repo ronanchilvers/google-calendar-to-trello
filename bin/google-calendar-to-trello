@@ -1,0 +1,35 @@
+<?php
+/**
+ * Main entrypoint
+ * -*- mode: php -*-
+ *
+ * @author Ronan Chilvers <ronan@d3r.com>
+ */
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Application;
+use App\Command\SyncCommand;
+use App\Command\TestCommand;
+use App\Provider\ConfigProvider;
+use App\Provider\GoogleProvider;
+use App\Provider\TrelloProvider;
+use Pimple\Container;
+
+$pimple                = new Container();
+
+// Base variables
+$pimple['app.name']    = 'google-calendar-to-trello';
+$pimple['app.version'] = '0.1-alpha';
+$pimple['app.cwd']     = realpath(__DIR__ . '/../') . '/';
+
+// Register providers
+$pimple->register(new ConfigProvider());
+$pimple->register(new GoogleProvider());
+$pimple->register(new TrelloProvider());
+
+// Build and run the console application
+$application = new Application($pimple, 'google-calendar-to-trello', '0.1-alpha');
+// $application->add(new TestCommand());
+$application->add(new SyncCommand());
+$application->run();
