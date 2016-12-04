@@ -30,6 +30,5 @@ $pimple->register(new TrelloProvider());
 
 // Build and run the console application
 $application = new Application($pimple, 'google-calendar-to-trello', '0.1-alpha');
-// $application->add(new TestCommand());
 $application->add(new SyncCommand());
 $application->run();
