@@ -47,7 +47,7 @@ class SyncCommand extends Command implements ContainerAwareInterface
 
         $calendar  = 'primary'; // This should come out of the config. Maybe an array?
         $options   = [
-          'maxResults'   => 10,
+          'maxResults'   => 20,
           'orderBy'      => 'startTime',
           'singleEvents' => true,
           'timeMin'      => $today->format('c'),
