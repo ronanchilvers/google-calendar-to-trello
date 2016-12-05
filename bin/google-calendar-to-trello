@@ -9,6 +9,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Application;
+use App\Command\QueryCommand;
 use App\Command\SyncCommand;
 use App\Command\TestCommand;
 use App\Provider\ConfigProvider;
@@ -31,4 +32,5 @@ $pimple->register(new TrelloProvider());
 // Build and run the console application
 $application = new Application($pimple, 'google-calendar-to-trello', '0.1-alpha');
 $application->add(new SyncCommand());
+$application->add(new QueryCommand());
 $application->run();
