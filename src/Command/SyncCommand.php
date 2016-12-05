@@ -25,6 +25,12 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 InputOption::VALUE_REQUIRED,
                 'The date to sync calendar events for, eg: 2016-12-07'
             )
+            ->addOption(
+                'list',
+                'l',
+                InputOption::VALUE_REQUIRED,
+                'Specify a different list id to put cards into'
+            )
             ;
     }
 
@@ -58,7 +64,11 @@ class SyncCommand extends Command implements ContainerAwareInterface
             $output->writeln('No events found');
             return;
         }
-        $count = 0;
+        $count  = 0;
+        $listId = $input->getOption('list');
+        if (is_null($listId)) {
+            $listId = $config->get('trello.list');
+        }
         foreach ($events as $event) {
             $id = $event->getId();
             $start = $event->start->dateTime;
@@ -78,7 +88,7 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 $attendees[] = sprintf('%s <%s>', $attendee->getDisplayName(), $attendee->getEmail());
             }
             $params = [
-                'idList' => $config->get('trello.list'),
+                'idList' => $listId,
                 'name'   => $event->getSummary(),
                 'desc'   => $event->getDescription(),
                 'due'    => $start->format('c'),
