@@ -44,7 +44,6 @@ class SyncCommand extends Command implements ContainerAwareInterface
     {
         $container = $this->getContainer();
         $config    = $container['app.config'];
-        $google    = $container['api.calendar'];
         $trello    = $container['api.trello'];
 
         $date      = $input->getOption('date');
@@ -55,27 +54,49 @@ class SyncCommand extends Command implements ContainerAwareInterface
         }
         $today->setTime('00', '00', '00');
         $tomorrow  = $today->copy()->setTime('23', '59', '59');
-        $output->writeln('Syncing events for ' . $today->format('jS F, Y'));
+        $output->writeln('Sync Date : ' . $today->format('jS F, Y'));
 
         $listId = $input->getOption('list');
         if (is_null($listId)) {
             $listId = $config->get('trello.list');
-            $output->writeln('Using default list');
-        } else {
-            $output->writeln('Using list id ' . $listId);
         }
-        $labels = false;
+        $output->writeln('List id : ' . $listId);
+        $labelString = $labels = $labelNames = $labelColors = false;
         if (!is_null($input->getOption('labels'))) {
             $labels = explode(',', $input->getOption('labels'));
             $labels = array_map(function ($value) {
                 return trim($value);
             }, $labels);
-            $output->writeln('Cards will have the following labels applied:');
+            $output->writeln('Labels:');
             $output->writeln(' - ' . implode("\n - ", $labels));
-            // $boardLabels = $trello->
-        }
-        exit;
 
+            $output->writeln('Querying for label data...');
+            $list      = $trello->lists()->show($listId);
+            $labelData = $trello->boards()->labels()->all($list['idBoard']);
+            if (0 < count($labelData)) {
+                $labelNames = $labelColors = [];
+                foreach ($labelData as $data) {
+                    $label                       = empty($data['name']) ? $data['color'] : $data['name'];
+                    $labelNames[$label]          = $data['id'];
+                    $labelColors[$data['color']] = $data['id'];
+                }
+            }
+            $labelString = [];
+            foreach ($labels as $label) {
+                if (isset($labelNames[$label])) {
+                    $labelString[] = $labelNames[$label];
+                    continue;
+                }
+                if (isset($labelColors[$label])) {
+                    $labelString[] = $labelColors[$label];
+                    continue;
+                }
+                $output->writeln(sprintf('Dropping missing label %s', $label));
+            }
+            $labelString = implode(',', $labelString);
+        }
+
+        $google    = $container['api.calendar'];
         $calendar  = 'primary'; // This should come out of the config. Maybe an array?
         $options   = [
           'maxResults'   => 20,
@@ -115,6 +136,9 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 'desc'   => $event->getDescription(),
                 'due'    => $start->format('c'),
             ];
+            if (is_string($labelString)) {
+                $params['idLabels'] = $labelString;
+            }
             $card = $trello->cards()->create($params);
 
             if (0 < count($attendees)) {
