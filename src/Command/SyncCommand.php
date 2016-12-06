@@ -21,15 +21,21 @@ class SyncCommand extends Command implements ContainerAwareInterface
             ->setDescription('Sync calendar events with Trello')
             ->addOption(
                 'date',
-                'd',
+                null,
                 InputOption::VALUE_REQUIRED,
                 'The date to sync calendar events for, eg: 2016-12-07'
             )
             ->addOption(
                 'list',
-                'l',
+                null,
                 InputOption::VALUE_REQUIRED,
                 'Specify a different list id to put cards into'
+            )
+            ->addOption(
+                'labels',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'A (comma separated) set of labels to apply to new cards'
             )
             ;
     }
@@ -51,6 +57,25 @@ class SyncCommand extends Command implements ContainerAwareInterface
         $tomorrow  = $today->copy()->setTime('23', '59', '59');
         $output->writeln('Syncing events for ' . $today->format('jS F, Y'));
 
+        $listId = $input->getOption('list');
+        if (is_null($listId)) {
+            $listId = $config->get('trello.list');
+            $output->writeln('Using default list');
+        } else {
+            $output->writeln('Using list id ' . $listId);
+        }
+        $labels = false;
+        if (!is_null($input->getOption('labels'))) {
+            $labels = explode(',', $input->getOption('labels'));
+            $labels = array_map(function ($value) {
+                return trim($value);
+            }, $labels);
+            $output->writeln('Cards will have the following labels applied:');
+            $output->writeln(' - ' . implode("\n - ", $labels));
+            // $boardLabels = $trello->
+        }
+        exit;
+
         $calendar  = 'primary'; // This should come out of the config. Maybe an array?
         $options   = [
           'maxResults'   => 20,
@@ -59,16 +84,13 @@ class SyncCommand extends Command implements ContainerAwareInterface
           'timeMin'      => $today->format('c'),
           'timeMax'      => $tomorrow->format('c'),
         ];
+        $output->writeln('Querying google...');
         $events = $google->events->listEvents($calendar, $options);
         if (0 == count($events)) {
             $output->writeln('No events found');
             return;
         }
         $count  = 0;
-        $listId = $input->getOption('list');
-        if (is_null($listId)) {
-            $listId = $config->get('trello.list');
-        }
         foreach ($events as $event) {
             $id = $event->getId();
             $start = $event->start->dateTime;
