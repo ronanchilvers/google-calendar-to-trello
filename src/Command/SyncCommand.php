@@ -37,6 +37,12 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 InputOption::VALUE_REQUIRED,
                 'A (comma separated) set of labels to apply to new cards'
             )
+            ->addOption(
+                'top',
+                null,
+                InputOption::VALUE_NONE,
+                'Create new trello cards at the top of the list'
+            )
             ;
     }
 
@@ -112,6 +118,7 @@ class SyncCommand extends Command implements ContainerAwareInterface
             return;
         }
         $count  = 0;
+        $position = true == $input->getOption('top') ? 'top' : 'bottom';
         foreach ($events as $event) {
             $id = $event->getId();
             $start = $event->start->dateTime;
@@ -135,6 +142,7 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 'name'   => $event->getSummary(),
                 'desc'   => $event->getDescription(),
                 'due'    => $start->format('c'),
+                'pos'    => $position
             ];
             if (is_string($labelString)) {
                 $params['idLabels'] = $labelString;
