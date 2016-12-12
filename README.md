@@ -26,3 +26,4 @@ php bin/google-calendar-to-trello sync
 ## Known issues
 
 - Currently the google token expires and isn't correctly refreshed. If this happens just delete the `google.token.json` file and redo the google authentication
+- The script doesn't remember events its already synced. If you run it twice for the same day you'll get two sets of cards. This is being worked on.
