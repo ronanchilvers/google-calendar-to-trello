@@ -14,6 +14,7 @@ use App\Command\SyncCommand;
 use App\Command\TestCommand;
 use App\Provider\ConfigProvider;
 use App\Provider\GoogleProvider;
+use App\Provider\StorageProvider;
 use App\Provider\TrelloProvider;
 use Pimple\Container;
 
@@ -26,6 +27,7 @@ $pimple['app.cwd']     = realpath(__DIR__ . '/../') . '/';
 
 // Register providers
 $pimple->register(new ConfigProvider());
+$pimple->register(new StorageProvider());
 $pimple->register(new GoogleProvider());
 $pimple->register(new TrelloProvider());
 
