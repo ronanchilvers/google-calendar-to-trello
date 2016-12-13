@@ -18,8 +18,8 @@ class StorageProvider implements ServiceProviderInterface
      */
     public function register(Container $pimple)
     {
-        $pimple['app.storage'] = function () {
-            return new Helper();
+        $pimple['app.storage'] = function () use ($pimple) {
+            return new Helper($pimple['app.config']->get('db.path'));
         };
     }
 }
