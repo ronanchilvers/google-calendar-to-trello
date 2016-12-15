@@ -12,6 +12,7 @@
         "pimple/pimple": "^3.0",
         "symfony/yaml": "^3.2",
         "hassankhan/config": "^0.10.0",
-        "ext-sqlite3": "*"
+        "ext-sqlite3": "*",
+        "php": "^5.6"
     }
 }
