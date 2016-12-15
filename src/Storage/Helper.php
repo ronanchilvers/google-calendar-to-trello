@@ -54,6 +54,39 @@ class Helper
     }
 
     /**
+     * Initialize the database schema
+     *
+     * This method should be idempotent
+     *
+     * @author Ronan Chilvers <ronan@d3r.com>
+     */
+    protected function initializeSchema()
+    {
+        $queries   = [];
+        $queries[] = "
+            CREATE TABLE IF NOT EXISTS event_cards (
+                event_id INTEGER PRIMARY KEY,
+                event_google_id VARCHAR(128),
+                event_card_id VARCHAR(64),
+                event_created DATETIME,
+                event_updated DATETIME
+            )
+        ";
+        $queries[] = "
+            CREATE INDEX IF NOT EXISTS event_cards_google_id ON event_cards (event_google_id)
+        ";
+        $queries[] = "
+            CREATE INDEX IF NOT EXISTS event_cards_card_id ON event_cards (event_card_id)
+        ";
+        $connection = $this->connection();
+        foreach ($queries as $query) {
+            if (!$connection->exec($query)) {
+                throw new Exception('Unable to execute query : ' . $query);
+            }
+        }
+    }
+
+    /**
      * Get the database connection
      *
      * @author Ronan Chilvers <ronan@d3r.com>
@@ -62,6 +95,7 @@ class Helper
     {
         if (!$this->connection instanceof SQLite3) {
             $this->connection = new SQLite3($this->path);
+            $this->initializeSchema();
         }
 
         return $this->connection;
