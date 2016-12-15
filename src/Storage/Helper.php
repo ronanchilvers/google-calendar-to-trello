@@ -3,6 +3,8 @@
 namespace App\Storage;
 
 use App\Traits\ConfigAwareTrait;
+use Carbon\Carbon;
+use Google_Service_Calendar_Event;
 use Noodlehaus\Config;
 use SQLite3;
 
@@ -51,6 +53,61 @@ class Helper
         if ($this->connection instanceof SQLite3) {
             $this->connection->close();
         }
+    }
+
+    /**
+     * Store an event with its associated card
+     *
+     * @param  Google_Service_Calendar_Event $event
+     * @param  array $card
+     * @return boolean
+     * @author Ronan Chilvers <ronan@d3r.com>
+     */
+    public function storeEventCard(Google_Service_Calendar_Event $event, array $card)
+    {
+        $sql = "
+            INSERT INTO event_cards (
+                event_google_id,
+                event_card_id,
+                event_created
+            ) VALUES (
+                :google_id,
+                :card_id,
+                :created
+            )
+        ";
+        $connection = $this->connection();
+        $stmt = $connection->prepare($sql);
+        $stmt->bindValue('google_id', $event->getId());
+        $stmt->bindValue('card_id', $card['id']);
+        $stmt->bindValue('created', Carbon::now()->format('Y-m-d H:i:s'));
+        if (!$stmt->execute()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a given event already has a card entry
+     *
+     * @param  Google_Service_Calendar_Event $event
+     * @return boolean
+     * @author Ronan Chilvers <ronan@d3r.com>
+     */
+    public function eventExists(Google_Service_Calendar_Event $event)
+    {
+        $sql = "SELECT COUNT(*) AS event_count FROM event_cards WHERE event_google_id = :google_id";
+        $connection = $this->connection();
+        $stmt = $connection->prepare($sql);
+        $stmt->bindValue('google_id', $event->getId());
+        $result = $stmt->execute();
+        $data = $result->fetchArray();
+        if (0 < $data['event_count']) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
