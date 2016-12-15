@@ -4,6 +4,11 @@ namespace App\Traits;
 
 use Pimple\Container;
 
+/**
+ * Trait for objects that have the container as a dependency
+ *
+ * @author Ronan Chilvers <ronan@d3r.com>
+ */
 trait ContainerAwareTrait
 {
     /**
@@ -11,7 +16,7 @@ trait ContainerAwareTrait
      *
      * @var Pimple\Container
      */
-    protected $container;
+    private $container;
 
     /**
      * Set the container object

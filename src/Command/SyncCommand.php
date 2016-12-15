@@ -117,8 +117,9 @@ class SyncCommand extends Command implements ContainerAwareInterface
             $output->writeln('No events found');
             return;
         }
-        $count  = 0;
+        $count    = 0;
         $position = true == $input->getOption('top') ? 'top' : 'bottom';
+        $storage  = $container['app.storage'];
         foreach ($events as $event) {
             $id = $event->getId();
             $start = $event->start->dateTime;
@@ -131,7 +132,11 @@ class SyncCommand extends Command implements ContainerAwareInterface
             }
             $start = new Carbon($start);
             $end   = new Carbon($end);
-            $output->writeln(sprintf("%s : %s", $event->getSummary(), $start));
+            if ($storage->eventExists($event)) {
+                $output->writeln(sprintf("Already synced : %s : %s", $event->getSummary(), $start));
+                continue;
+            }
+            $output->writeln(sprintf("Syncing : %s : %s", $event->getSummary(), $start));
 
             $attendees = [];
             foreach ($event->getAttendees() as $attendee) {
@@ -148,6 +153,7 @@ class SyncCommand extends Command implements ContainerAwareInterface
                 $params['idLabels'] = $labelString;
             }
             $card = $trello->cards()->create($params);
+            $storage->storeEventCard($event, $card);
 
             if (0 < count($attendees)) {
                 $checklist = $trello->checklists()->create([
