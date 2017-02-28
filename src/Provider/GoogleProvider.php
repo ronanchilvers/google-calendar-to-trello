@@ -58,8 +58,11 @@ class GoogleProvider implements ServiceProviderInterface
             $accessToken = json_decode(file_get_contents($token), true);
             $client->setAccessToken($accessToken);
             if ($client->isAccessTokenExpired()) {
-                $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-                if (!file_put_contents($token, json_encode($client->getAccessToken()))) {
+                $refreshToken = $client->getRefreshToken();
+                $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                $accessToken = $client->getAccessToken();
+                $accessToken['refresh_token'] = $refreshToken;
+                if (!file_put_contents($token, json_encode($accessToken))) {
                     throw new Exception('Unable to refresh access token');
                 }
             }
