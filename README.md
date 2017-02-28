@@ -26,4 +26,3 @@ php bin/google-calendar-to-trello sync
 ## Known issues
 
 - At the moment the script only pulls events from the primary google calendar for the authenticated user. A cli switch and config option will be added to change it. [https://github.com/ronanchilvers/google-calendar-to-trello/issues/2]
-- Currently the google token expires and isn't correctly refreshed. If this happens just delete the `google.token.json` file and redo the google authentication
