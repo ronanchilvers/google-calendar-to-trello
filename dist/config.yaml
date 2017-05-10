@@ -1,0 +1,12 @@
+trello:
+    username: false
+    key: false
+    token: false
+    list: false
+
+google:
+  secret: google.secret.json
+  token: google.token.json
+
+db:
+  path: database.sqlite
