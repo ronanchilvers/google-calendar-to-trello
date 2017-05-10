@@ -4,3 +4,4 @@ google.secret.json
 google.token.json
 /tmp/
 database.sqlite
+*.sublime-*
