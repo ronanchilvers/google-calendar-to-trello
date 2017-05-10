@@ -1,4 +1,5 @@
 trello:
-    key: <your trello api secret>
-    token: <your trello api token>
-    list: <the trello list to add events to>
+  username: <your trello username>
+  key: <your trello api secret>
+  token: <your trello api token>
+  list: <the trello list to add events to>
